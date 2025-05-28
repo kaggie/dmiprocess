@@ -500,5 +500,3 @@ class LinearCombinationModel:
             'absolute': self.estimated_crlbs_absolute,
             'percent_metabolite': self.estimated_metabolite_crlbs_percent
         }
-
-```

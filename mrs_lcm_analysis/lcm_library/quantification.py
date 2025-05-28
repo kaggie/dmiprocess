@@ -46,9 +46,7 @@ class AbsoluteQuantifier:
                                attenuation_factors_metabolites: Optional[Dict[str, float]] = None
                               ) -> Tuple[Dict[str, float], List[str]]:
         """
-        Calculates absolute concentrations of metabolites.
-        This step focuses on relaxation and tissue correction for water, and
-        preparing relaxation-corrected metabolite signals and metabolite compartment fraction.
+        Calculates absolute concentrations of metabolites using an internal water reference.
 
         Args:
             metabolite_amplitudes (Dict[str, float]): Metabolite signal amplitudes from LCM.
@@ -67,22 +65,20 @@ class AbsoluteQuantifier:
 
         Returns:
             Tuple[Dict[str, float], List[str]]: 
-                - Dictionary containing:
-                    - Metabolite names mapped to their relaxation-corrected amplitudes (S_met / Att_met).
-                    - '_water_signal_corrected': Water signal corrected for relaxation and tissue water content (S_wat / (Att_wat * f_voxel_water_content)).
-                    - '_metabolite_compartment_fraction': Fraction of voxel active for metabolites (e.g., GM+WM).
-                - List of warnings generated.
+                - Dictionary of metabolite names mapped to their absolute concentrations (mM).
+                - List of warnings generated during the calculation.
         """
         intermediate_results: Dict[str, float] = {}
+        final_concentrations: Dict[str, float] = {}
         warnings_list: List[str] = []
 
         if water_amplitude <= 1e-9: # Check for effectively zero or negative water amplitude
-            warnings_list.append("Water amplitude is zero or negative. Absolute quantification is not possible.")
+            warnings_list.append("Input water amplitude is zero or negative. Absolute quantification is not possible.")
             for metab_name in metabolite_amplitudes:
-                intermediate_results[metab_name] = np.nan
-            intermediate_results['_water_signal_corrected'] = np.nan
-            intermediate_results['_metabolite_compartment_fraction'] = 1.0 
-            return intermediate_results, warnings_list
+                final_concentrations[metab_name] = np.nan
+            # intermediate_results['_water_signal_corrected'] = np.nan # Not needed if returning early
+            # intermediate_results['_metabolite_compartment_fraction'] = 1.0 # Not needed
+            return final_concentrations, warnings_list
 
         # --- Validate Tissue Fraction Inputs ---
         valid_tissue_fractions_provided = False
@@ -222,7 +218,57 @@ class AbsoluteQuantifier:
 
             intermediate_results[metab_name] = corrected_metab_amplitude
         
-        return intermediate_results, warnings_list
+        # --- Calculate Final Absolute Concentrations ---
+        water_signal_corrected = intermediate_results.get('_water_signal_corrected', np.nan)
+        metabolite_compartment_fraction = intermediate_results.get('_metabolite_compartment_fraction', 1.0)
+
+        if np.isnan(water_signal_corrected) or water_signal_corrected < 1e-9:
+            warnings_list.append("Corrected water signal is zero, negative, or NaN. Cannot calculate absolute concentrations.")
+            for metab_name in metabolite_amplitudes:
+                final_concentrations[metab_name] = np.nan
+            return final_concentrations, warnings_list
+
+        for metab_name, initial_amplitude in metabolite_amplitudes.items():
+            corrected_metabolite_amplitude = intermediate_results.get(metab_name, 0.0)
+            
+            # If initial amplitude was None/NaN or corrected is None/NaN/zero, concentration is 0 or NaN
+            if corrected_metabolite_amplitude is None or np.isnan(corrected_metabolite_amplitude) or corrected_metabolite_amplitude < 1e-9 : # Effectively zero
+                final_concentrations[metab_name] = 0.0 
+                if corrected_metabolite_amplitude is None or np.isnan(corrected_metabolite_amplitude):
+                     # Warning for this already added when setting intermediate_results[metab_name] to 0.0 or NaN
+                     pass # warnings_list.append(f"Corrected amplitude for {metab_name} is NaN. Setting concentration to NaN.")
+                # else: # Amplitude is near zero
+                     # warnings_list.append(f"Corrected amplitude for {metab_name} is near zero. Setting concentration to 0.0.")
+                continue
+
+            protons_metabolite = proton_counts_metabolites.get(metab_name)
+            if protons_metabolite is None or not isinstance(protons_metabolite, int) or protons_metabolite <= 0:
+                warnings_list.append(f"Proton count for {metab_name} is missing, invalid, or zero ({protons_metabolite}). Cannot calculate concentration.")
+                final_concentrations[metab_name] = np.nan
+                continue
+
+            # Core concentration calculation
+            try:
+                conc_met = (corrected_metabolite_amplitude / protons_metabolite) * \
+                           (self.default_protons_water / water_signal_corrected) * \
+                           self.default_water_conc_tissue_mM
+            except ZeroDivisionError: # Should be caught by water_signal_corrected check earlier
+                warnings_list.append(f"Division by zero encountered during concentration calculation for {metab_name} (unexpected). Setting to NaN.")
+                final_concentrations[metab_name] = np.nan
+                continue
+            
+            # Apply metabolite compartment fraction
+            if np.isnan(metabolite_compartment_fraction) or metabolite_compartment_fraction < 1e-9:
+                if not np.isnan(conc_met): # Only add warning if conc_met was valid before this check
+                    warnings_list.append(f"Metabolite compartment fraction is zero or NaN. Concentration for {metab_name} set to NaN.")
+                final_concentrations[metab_name] = np.nan
+            elif not np.isclose(metabolite_compartment_fraction, 1.0, atol=1e-9): # Apply if not 1.0
+                if not np.isnan(conc_met):
+                    conc_met /= metabolite_compartment_fraction
+            
+            final_concentrations[metab_name] = conc_met
+
+        return final_concentrations, warnings_list
 
     @staticmethod
     def _calculate_relaxation_attenuation(te_ms: float, tr_ms: float, t1_ms: float, t2_ms: float) -> float:

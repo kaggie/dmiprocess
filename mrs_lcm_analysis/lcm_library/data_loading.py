@@ -239,5 +239,3 @@ class MRSData:
             repr_str += f", TR={self.repetition_time_ms} ms"
         repr_str += ")"
         return repr_str
-
-```
