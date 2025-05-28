@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Optional
 
 class BasisSpectrum:
     """Represents a single metabolite's basis spectrum."""
 
-    def __init__(self, name: str, spectrum_data: np.ndarray, frequency_axis: np.ndarray = None):
+    def __init__(self, name: str, spectrum_data: np.ndarray, frequency_axis: Optional[np.ndarray] = None):
         """
         Initializes a BasisSpectrum object.
 
@@ -62,7 +63,6 @@ class BasisSet:
         if not isinstance(basis_spectrum, BasisSpectrum):
             raise TypeError("Input must be a BasisSpectrum object.")
         if basis_spectrum.name in self.metabolites:
-            # Potentially raise a warning or error, or allow overwrite
             print(f"Warning: Metabolite '{basis_spectrum.name}' already exists and will be overwritten.")
         self.metabolites[basis_spectrum.name] = basis_spectrum
 

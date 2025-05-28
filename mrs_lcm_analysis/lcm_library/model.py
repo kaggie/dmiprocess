@@ -474,14 +474,21 @@ class LinearCombinationModel:
         """
         Returns the estimated Cramer-Rao Lower Bounds (CRLBs) for the fitted parameters.
 
+        The 'absolute' CRLBs are the estimated standard deviations of the parameters.
+        The 'percent_metabolite' CRLBs are the absolute CRLB of a metabolite
+        divided by its estimated amplitude, expressed as a percentage.
+
         Returns:
             dict: A dictionary with two keys:
-                  'absolute': A dictionary mapping parameter names (metabolites and
-                              baseline components like 'baseline_deg0') to their
-                              absolute CRLB values (standard deviations).
-                  'percent_metabolite': A dictionary mapping metabolite names to their
-                                        CRLBs as a percentage of their estimated amplitude.
-                  Returns None for a key if CRLBs could not be calculated or are not applicable.
+                  'absolute': A dictionary where keys are parameter names (e.g., 'NAA',
+                              'Cr', 'baseline_deg0', 'baseline_deg1') and values are
+                              their absolute CRLB (estimated standard deviation).
+                              This dictionary will be None if CRLBs could not be calculated.
+                  'percent_metabolite': A dictionary where keys are metabolite names and
+                                        values are their CRLBs as a percentage of their
+                                        estimated amplitude. This dictionary will be None
+                                        if CRLBs could not be calculated or if no
+                                        metabolites were fitted.
         
         Raises:
             RuntimeError: If fit has not been performed yet.

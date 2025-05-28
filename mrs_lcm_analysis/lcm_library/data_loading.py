@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import scipy.fft
 import matplotlib.pyplot as plt
+from typing import Optional, Dict, Union
 
 class MRSData:
     """
@@ -12,9 +13,9 @@ class MRSData:
     def __init__(self,
                  data_array: np.ndarray,
                  data_type: str,
-                 sampling_frequency: float = None,
-                 central_frequency: float = None,
-                 metadata: dict = None):
+                 sampling_frequency: Optional[float] = None,
+                 central_frequency: Optional[float] = None,
+                 metadata: Optional[Dict[str, Union[str, float, int]]] = None):
         """
         Initializes an MRSData object.
 
