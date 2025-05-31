@@ -1,0 +1,48 @@
+{
+    "input_file": ["sample_data/test.mat", "sample_data/test.h5"],
+    "file_format": null,
+    "output_dir": "results_cli_batch_test/",
+    "output_prefix": "cli_test_scan",
+    "mode_specific_params": {
+        "oxsa": {
+            "prior_knowledge_file": "dummy_prior.json",
+            "lineshape": "lorentzian"
+        }
+    },
+    "preprocessing_params": {
+        "apodization": {
+            "function": "exponential",
+            "lb_hz": 2.0
+        },
+        "fft_if_time_domain": true,
+        "baseline_correction": {
+            "method": "polynomial",
+            "degree": 2
+        },
+        "phase_correction": {
+            "method": "manual",
+            "ph0_deg": 5.0,
+            "ph1_deg_per_point": 0.1
+        }
+    },
+    "vendor": null,
+    "mode_specific_params": {
+        "oxsa": {
+            "prior_knowledge_file": "priors/example_oxsa_prior.csv",
+            "lineshape": "voigt",
+            "num_peaks": 1,
+            "initial_params_guess": {
+                "a": [1.0], "f": [50.0], "d": [10.0], "phi": [0.0], "g": [0.5]
+            },
+            "fit_settings": { "optimizer": "Adam", "num_iterations": 50, "learning_rate": 0.1 },
+            "output_options": { "save_spectrum_fit": true, "save_parameters_csv": true }
+        },
+        "lcmodel": {
+            "basis_file": "sample_data/dummy_lcmodel.basis",
+            "fitting_range_ppm": [0.5, 4.0],
+            "baseline_degree": 3,
+            "fit_settings": { "use_torch": false },
+            "output_options": { "save_spectrum_fit": true, "save_parameters_csv": true }
+        }
+    }
+}

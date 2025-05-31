@@ -337,5 +337,3 @@ class AdvancedLinearCombinationModel(nn.Module):
         
         self.eval() 
         print("Fitting complete.")
-
-```
