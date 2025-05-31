@@ -1,0 +1,13 @@
+input_file: data/input.yaml_dat
+mode_specific_params:
+    lcmodel:
+        baseline_degree: 4
+        basis_file: basis/lcmodel_basis.yaml_basis
+        fitting_range_ppm:
+        - 0.2
+        - 4.2
+    oxsa:
+        lineshape: gaussian
+        prior_knowledge_file: priors/oxsa_prior.yaml_prior
+output_dir: results_yaml/
+output_prefix: scan01_yaml

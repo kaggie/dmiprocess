@@ -1,0 +1,19 @@
+{
+    "input_file": "data/input.dat",
+    "output_dir": "results/",
+    "output_prefix": "scan01",
+    "mode_specific_params": {
+        "oxsa": {
+            "prior_knowledge_file": "priors/oxsa_prior.json",
+            "lineshape": "lorentzian"
+        },
+        "lcmodel": {
+            "basis_file": "basis/lcmodel_basis.basis",
+            "fitting_range_ppm": [
+                0.5,
+                4.0
+            ],
+            "baseline_degree": 3
+        }
+    }
+}

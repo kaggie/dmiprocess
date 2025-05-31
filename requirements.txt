@@ -1,0 +1,9 @@
+PyYAML>=5.0
+numpy>=1.20
+scipy>=1.7
+h5py>=3.0
+pyspecdata>=0.9.5
+torch>=1.8 # Added torch
+matplotlib>=3.0 # Added matplotlib
+# Note: Exact version for pyspecdata might need adjustment
+# based on availability and compatibility. Using a generic 1.0 for now.

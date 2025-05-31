@@ -1,0 +1,21 @@
+$NMLIST
+  METAB_A, METAB_B
+ $END
+ $SYSTEM
+  HZPPPM = 123.2  $ Same as FT for MRSData
+  NDATAB = 4      $ Number of data points for each metab
+ $END
+ $BASIS
+  CONC=1.0, HZPPPM=123.2, TE=30, METABO='METAB_A'
+ $END
+  1.0  0.1  $ Real Imag for METAB_A pt1
+  2.0  0.2
+  1.5  0.15
+  0.5  0.05
+ $BASIS
+  CONC=1.0, HZPPPM=123.2, TE=30, METABO='METAB_B'
+ $END
+  0.8  -0.1
+  1.8  -0.2
+  1.2  -0.15
+  0.3  -0.05

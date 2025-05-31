@@ -1,0 +1,9 @@
+{
+    "output_dir": "results/",
+    "output_prefix": "scan02",
+    "mode_specific_params": {
+        "oxsa": {
+            "lineshape": "lorentzian"
+        }
+    }
+}
